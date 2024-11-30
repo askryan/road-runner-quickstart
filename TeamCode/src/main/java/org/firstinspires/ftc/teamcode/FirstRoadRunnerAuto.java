@@ -6,18 +6,31 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
+
+
+
+
+
 
 // Non-RR imports
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
 @Autonomous(name = "GoodAuto", group = "Roadrunner")
-
-public class FirstRoadRunnerAuto {
+public class FirstRoadRunnerAuto extends LinearOpMode {
 
     public class ISlides {
         public DcMotor iSlideL, iSlideR;
@@ -242,7 +255,7 @@ public class FirstRoadRunnerAuto {
         public class OSlidesBottom implements Action {
 
             public boolean initialized = false;
-            public static final int BOTTOM_OUTTAKE_SLIDE_POS = 0;
+            public static final int BOTTOM_OUTTAKE_SLIDE_POS = 0; // needs manual testing II
             public static final double OUTTAKE_SLIDE_POWER = 0.5;
 
             @Override
@@ -277,7 +290,7 @@ public class FirstRoadRunnerAuto {
         public class ExtendOSlidesHBar implements Action {
 
             public boolean initialized = false;
-            public static final int HBAR_OUTTAKE_SLIDE_POS = 1500;
+            public static final int HBAR_OUTTAKE_SLIDE_POS = 1500; // needs manual testing II
             public static final double OUTTAKE_SLIDE_POWER = 0.5;
 
             @Override
@@ -312,7 +325,7 @@ public class FirstRoadRunnerAuto {
         public class LowerOSlidesToHook implements Action {
 
             public boolean initialized = false;
-            public static final int HBAR_OUTTAKE_SLIDE_POS = 1400;
+            public static final int HBAR_OUTTAKE_SLIDE_POS = 1400; // needs manual testing II
             public static final double OUTTAKE_SLIDE_POWER = 0.7;
 
             @Override
@@ -347,7 +360,7 @@ public class FirstRoadRunnerAuto {
         public class ExtendOSlidesPickup implements Action {
 
             public boolean initialized = false;
-            public static final int HBAR_OUTTAKE_SLIDE_POS = 800;
+            public static final int HBAR_OUTTAKE_SLIDE_POS = 800; // needs manual testing II
             public static final double OUTTAKE_SLIDE_POWER = 0.5;
 
             @Override
@@ -379,5 +392,120 @@ public class FirstRoadRunnerAuto {
             return new ExtendOSlidesPickup();
         }
 
+        public class LowerOSlidesPickup implements Action {
+
+            public boolean initialized = false;
+            public static final int HBAR_OUTTAKE_SLIDE_POS = 800; // needs manual testing II
+            public static final double OUTTAKE_SLIDE_POWER = 0.5;
+
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                if (!initialized) {
+                    oSlideL.setPower(OUTTAKE_SLIDE_POWER);
+                    oSlideR.setPower(OUTTAKE_SLIDE_POWER);
+                    initialized = !initialized;
+                }
+
+                int posL = oSlideL.getCurrentPosition();
+                int posR = oSlideR.getCurrentPosition();
+
+                telemetryPacket.put("Left outtake slide position", posL);
+                telemetryPacket.put("Right outtake slide position", posR);
+
+                if (posL > HBAR_OUTTAKE_SLIDE_POS && posR > HBAR_OUTTAKE_SLIDE_POS) {
+                    return true;
+                } else {
+                    oSlideL.setPower(0);
+                    oSlideR.setPower(0);
+                    return false;
+                }
+            }
+        }
+
+        public Action lowerOSlidesPickup() {
+            return new LowerOSlidesPickup();
+        }
+
     }
+
+
+    @Override
+    public void runOpMode() {
+        double ninety = Math.toRadians(90);
+        double oneEighty = Math.toRadians(180);
+        double twoSeventy = Math.toRadians(270);
+
+        // instantiate your MecanumDrive at a particular pose.
+        Pose2d initialPose = new Pose2d(20, -61, ninety); // needs manual testing II
+
+        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+
+        OArm oArm = new OArm(hardwareMap);
+
+        OClaw oClaw = new OClaw(hardwareMap);
+
+        OSlides oSlides = new OSlides(hardwareMap);
+
+        //https://learnroadrunner.com/trajectories.html#slowing-down-a-trajectory to adjust trajectory speed
+        TrajectoryActionBuilder tab0 = drive.actionBuilder(initialPose)
+                .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety) // position at the bar for the preload
+                .waitSeconds(1)
+                .splineToSplineHeading(new Pose2d(36, -30, ninety), ninety) // intermediate stage in the path to first block
+                .splineToConstantHeading(new Vector2d(48, -10), 0) // arrives north of the first block
+                .setTangent(ninety)
+                .lineToY(-56) // pushes the block
+                .lineToY(-16) // goes up to try and reach the second block
+                .splineToConstantHeading(new Vector2d(58, -14), Math.toRadians(300)) // goes north of the second block
+                .setTangent(ninety)
+                .lineToY(-56) // pushes the second block down
+                .strafeToConstantHeading(new Vector2d(36, -61)) // goes to the pickup position for the first block,
+                .waitSeconds(0.2)
+                .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety) // goes to the bar
+                .waitSeconds(1)
+                .strafeToSplineHeading(new Vector2d(36, -61), ninety) // goes to the pickup position for the second block
+                .waitSeconds(0.2)
+                .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety) // goes to the bar
+                .waitSeconds(1)
+                .strafeTo(new Vector2d(61, -61));// parks
+
+        TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose).
+                splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety);
+
+        TrajectoryActionBuilder tab2 = drive.actionBuilder(new Pose2d(10, -34, twoSeventy))
+                .splineToSplineHeading(new Pose2d(36, -30, ninety), ninety) // intermediate stage in the path to first block
+                .splineToConstantHeading(new Vector2d(48, -10), 0) // arrives north of the first block
+                .setTangent(ninety)
+                .lineToY(-56) // pushes the block
+                .lineToY(-16) // goes up to try and reach the second block
+                .splineToConstantHeading(new Vector2d(58, -14), Math.toRadians(300)) // goes north of the second block
+                .setTangent(ninety)
+                .lineToY(-56); //pushes the second block down
+
+        //init actions
+        Actions.runBlocking(new SequentialAction(oClaw.closeOClaw(), oArm.retractOArm()));
+
+        waitForStart();
+
+        if (isStopRequested()) return;
+
+        Action tabAct1 = tab1.build();
+
+        ParallelAction preloadGoToBar = new ParallelAction(
+                tabAct1,
+                oSlides.extendOSlidesHBar(),
+                oArm.extendOArm()
+        );
+
+        SequentialAction goToBarAndHook = new SequentialAction(preloadGoToBar, oSlides.lowerOSlidesToHook(),
+                oClaw.openOClaw(), oArm.retractOArm());
+
+
+        Actions.runBlocking(
+                goToBarAndHook
+        );
+
+
+    }
+
 }
