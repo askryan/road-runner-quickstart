@@ -32,6 +32,7 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 @Autonomous(name = "GoodAuto", group = "Roadrunner")
 public class FirstRoadRunnerAuto extends LinearOpMode {
 
+    /*
     public class ISlides {
         public DcMotor iSlideL, iSlideR;
 
@@ -90,6 +91,9 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
     }
 
+     */
+
+    /*
     public class IClaw {
         public Servo iClaw;
         public double minPos = 0; // needs manual testing II
@@ -127,6 +131,9 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         }
     }
 
+     */
+
+    /*
     public class IRotation {
         public Servo iRotation;
         public double minPos = 0; // needs manual testing II
@@ -139,6 +146,9 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
     }
 
+     */
+
+    /*
     public class IArm {
         public Servo iArmL, iArmR;
 
@@ -157,10 +167,12 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
     }
 
+     */
+
     public class OArm {
         public Servo oArm;
-        public double minPos = 0; // needs manual testing II
-        public double maxPos = 1; // needs manual testing II
+        public double minPos = 0.15; // needs manual testing II
+        public double maxPos = 0.93; // needs manual testing II
 
         public OArm(HardwareMap hardwareMap) {
             oArm = hardwareMap.get(Servo.class, "oArm");
@@ -170,8 +182,8 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         public class ExtendOArm implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                oArm.setPosition(1);
-                telemetryPacket.put("Outtake claw position", maxPos);
+                oArm.setPosition(0);
+                telemetryPacket.put("Outtake claw position", minPos);
                 return false;
             }
         }
@@ -183,8 +195,8 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         public class RetractOArm implements Action {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                oArm.setPosition(0);
-                telemetryPacket.put("Outtake claw position", minPos);
+                oArm.setPosition(1);
+                telemetryPacket.put("Outtake claw position", maxPos);
                 return false;
             }
         }
