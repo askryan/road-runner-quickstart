@@ -447,6 +447,8 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
         OSlides oSlides = new OSlides(hardwareMap);
 
+        /*
+
         //https://learnroadrunner.com/trajectories.html#slowing-down-a-trajectory to adjust trajectory speed
         TrajectoryActionBuilder tab0 = drive.actionBuilder(initialPose)
                 .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety) // position at the bar for the preload
@@ -459,7 +461,7 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(58, -14), Math.toRadians(300)) // goes north of the second block
                 .setTangent(ninety)
                 .lineToY(-56) // pushes the second block down
-                .strafeToConstantHeading(new Vector2d(36, -61)) // goes to the pickup position for the first block,
+                .strafeToConstantHeading(new Vector2d(36, -61)) // goes to the pickup position for the first block
                 .waitSeconds(0.2)
                 .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety) // goes to the bar
                 .waitSeconds(1)
@@ -468,6 +470,8 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety) // goes to the bar
                 .waitSeconds(1)
                 .strafeTo(new Vector2d(61, -61));// parks
+
+         */
 
         TrajectoryActionBuilder tab1 = drive.actionBuilder(initialPose).
                 splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety);
@@ -482,6 +486,21 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
                 .setTangent(ninety)
                 .lineToY(-56); //pushes the second block down
 
+        TrajectoryActionBuilder tab3 = drive.actionBuilder(new Pose2d(58, -56, ninety))
+                .strafeToConstantHeading(new Vector2d(36, -61)); // goes to the pickup position for the first block
+
+        TrajectoryActionBuilder tab4 = drive.actionBuilder(new Pose2d(36, -61, ninety))
+                .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety); // goes to hook the first picked up block
+
+        TrajectoryActionBuilder tab5 = drive.actionBuilder(new Pose2d(10, -34, twoSeventy))
+                .strafeToSplineHeading(new Vector2d(36, -61), ninety); // goes to the pickup position for the second block
+
+        TrajectoryActionBuilder tab6 = drive.actionBuilder(new Pose2d(36, -61, ninety))
+                .splineToSplineHeading(new Pose2d(10, -34, twoSeventy), ninety); // goes to the bar
+
+        TrajectoryActionBuilder tab7 = drive.actionBuilder(new Pose2d(10, -34, twoSeventy))
+                .strafeTo(new Vector2d(61, -61)); // parks
+
         //init actions
         Actions.runBlocking(new SequentialAction(oClaw.closeOClaw(), oArm.retractOArm()));
 
@@ -489,10 +508,16 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-        Action tabAct1 = tab1.build();
+        Action act1 = tab1.build();
+        Action act2 = tab2.build();
+        Action act3 = tab3.build();
+        Action act4 = tab4.build();
+        Action act5 = tab5.build();
+        Action act6 = tab6.build();
+        Action park = tab7.build();
 
         ParallelAction preloadGoToBar = new ParallelAction(
-                tabAct1,
+                act1,
                 oSlides.extendOSlidesHBar(),
                 oArm.extendOArm()
         );
@@ -500,9 +525,26 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         SequentialAction goToBarAndHook = new SequentialAction(preloadGoToBar, oSlides.lowerOSlidesToHook(),
                 oClaw.openOClaw(), oArm.retractOArm());
 
+        ParallelAction lowerSlidesAndPush = new ParallelAction(oSlides.oSlidesBottom(), act2);
+
+        ParallelAction firstPickup = new ParallelAction(act3, oArm.extendOArm(), oSlides.extendOSlidesPickup());
+
+        ParallelAction firstHook = new ParallelAction(act4, oSlides.extendOSlidesHBar());
+
+        SequentialAction actuallyHook = new SequentialAction(firstHook, oSlides.lowerOSlidesToHook(),
+                oClaw.openOClaw(), oArm.retractOArm());
+
+        ParallelAction goBackToPickup = new ParallelAction(act5, oSlides.lowerOSlidesPickup(), oArm.extendOArm());
+
+        ParallelAction lastGoToHook = new ParallelAction(act6, oSlides.extendOSlidesHBar());
+
+        SequentialAction hookSecondTime = new SequentialAction(lastGoToHook,
+                oSlides.lowerOSlidesToHook(), oClaw.openOClaw(), oArm.retractOArm()); // Even though this is technically the third time, I'm counting the preload as the 0th time
+
 
         Actions.runBlocking(
-                goToBarAndHook
+                new SequentialAction(goToBarAndHook, lowerSlidesAndPush, firstPickup, oClaw.closeOClaw()
+                , actuallyHook, goBackToPickup, oClaw.closeOClaw(), lastGoToHook, hookSecondTime, park)
         );
 
 
