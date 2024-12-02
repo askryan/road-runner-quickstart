@@ -27,147 +27,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 @Autonomous(name = "GoodAuto", group = "Roadrunner")
 public class FirstRoadRunnerAuto extends LinearOpMode {
-
-    /*
-    public class ISlides {
-        public DcMotor iSlideL, iSlideR;
-
-        public ISlides(HardwareMap hardwareMap) {
-            iSlideL = hardwareMap.get(DcMotor.class, "iSlideL");
-            iSlideR = hardwareMap.get(DcMotor.class, "iSlideR");
-
-            iSlideL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            iSlideL.setDirection(DcMotorSimple.Direction.FORWARD);
-
-            iSlideR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            iSlideR.setDirection(DcMotorSimple.Direction.REVERSE);
-
-            iSlideL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            iSlideL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            iSlideR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            iSlideR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        public class ExtendISlides implements Action {
-
-            public boolean initialized = false;
-            public static final int MAX_INTAKE_SLIDE_POS = 1100;
-            public static final double INTAKE_SLIDE_POWER = 0.4;
-
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
-                if (!initialized) {
-                    iSlideL.setPower(INTAKE_SLIDE_POWER);
-                    iSlideR.setPower(INTAKE_SLIDE_POWER);
-                    initialized = !initialized;
-                }
-
-                int posL = iSlideL.getCurrentPosition();
-                int posR = iSlideR.getCurrentPosition();
-
-                telemetryPacket.put("Left intake slide position", posL);
-                telemetryPacket.put("Right intake slide position", posR);
-
-                if (posL < MAX_INTAKE_SLIDE_POS && posR < MAX_INTAKE_SLIDE_POS) {
-                    return true;
-                } else {
-                    iSlideL.setPower(0);
-                    iSlideR.setPower(0);
-                    return false;
-                }
-            }
-        }
-
-        public Action extendISlides() {
-            return new ExtendISlides();
-        }
-
-
-    }
-
-     */
-
-    /*
-    public class IClaw {
-        public Servo iClaw;
-        public double minPos = 0; // needs manual testing II
-        public double maxPos = 1; // needs manual testing II
-
-        public IClaw(HardwareMap hardwareMap) {
-            iClaw = hardwareMap.get(Servo.class, "iClaw");
-            iClaw.scaleRange(minPos, maxPos);
-        }
-
-        public class OpenIClaw implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                iClaw.setPosition(1);
-                telemetryPacket.put("Intake claw position", maxPos);
-                return false;
-            }
-        }
-
-        public Action openIClaw() {
-            return new OpenIClaw();
-        }
-
-        public class CloseIClaw implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                iClaw.setPosition(0);
-                telemetryPacket.put("Intake claw position", minPos);
-                return false;
-            }
-        }
-
-        public Action closeIClaw() {
-            return new CloseIClaw();
-        }
-    }
-
-     */
-
-    /*
-    public class IRotation {
-        public Servo iRotation;
-        public double minPos = 0; // needs manual testing II
-        public double maxPos = 1; // needs manual testing II
-
-        public IRotation(HardwareMap hardwareMap) {
-            iRotation = hardwareMap.get(Servo.class, "iRotation");
-            iRotation.scaleRange(minPos, maxPos);
-        }
-
-    }
-
-     */
-
-    /*
-    public class IArm {
-        public Servo iArmL, iArmR;
-
-        public double minPosL = 0; // needs manual testing II
-        public double maxPosL = 1; // needs manual testing II
-
-        public double minPosR = 0; // needs manual testing II
-        public double maxPosR = 1; // needs manual testing II
-
-        public IArm(HardwareMap hardwareMap) {
-            iArmL = hardwareMap.get(Servo.class, "L1");
-            iArmR = hardwareMap.get(Servo.class, "R1");
-            iArmL.scaleRange(minPosL, maxPosL);
-            iArmR.scaleRange(minPosR, maxPosR);
-        }
-
-    }
-
-     */
+    ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     public class OArm {
         public Servo oArm;
@@ -180,11 +45,16 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         }
 
         public class ExtendOArm implements Action {
+            boolean initialized = false;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                oArm.setPosition(0);
+                if (!initialized) {
+                    timer.reset();
+                    oArm.setPosition(0);
+                    initialized = true;
+                }
                 telemetryPacket.put("Outtake claw position", minPos);
-                return false;
+                return timer.milliseconds() < 800;
             }
         }
 
@@ -193,11 +63,16 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         }
 
         public class RetractOArm implements Action {
+            boolean initialized = false;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                oArm.setPosition(1);
+                if (!initialized) {
+                    timer.reset();
+                    oArm.setPosition(1);
+                    initialized = true;
+                }
                 telemetryPacket.put("Outtake claw position", maxPos);
-                return false;
+                return timer.milliseconds() < 800;
             }
         }
 
@@ -218,11 +93,16 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         }
 
         public class OpenOClaw implements Action {
+            boolean initialized = false;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                oClaw.setPosition(1);
+                if (!initialized) {
+                    timer.reset();
+                    oClaw.setPosition(1);
+                    initialized = true;
+                }
                 telemetryPacket.put("Outtake claw position", maxPos);
-                return false;
+                return timer.milliseconds() < 400;
             }
         }
 
@@ -231,11 +111,17 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         }
 
         public class CloseOClaw implements Action {
+            boolean initialized = false;
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                oClaw.setPosition(0);
+                if (!initialized) {
+                    timer.reset();
+                    oClaw.setPosition(0);
+                    initialized = true;
+                }
+
                 telemetryPacket.put("Outtake claw position", minPos);
-                return false;
+                return timer.milliseconds() < 400;
             }
         }
 
