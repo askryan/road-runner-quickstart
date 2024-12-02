@@ -556,7 +556,7 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
         Actions.runBlocking(
                 new SequentialAction(goToBarAndHook, lowerSlidesAndPush, firstPickup, oClaw.closeOClaw()
-                , actuallyHook, goBackToPickup, oClaw.closeOClaw(), lastGoToHook, hookSecondTime, park)
+                , actuallyHook, goBackToPickup, oClaw.closeOClaw(), hookSecondTime, park)
         );
 
 
