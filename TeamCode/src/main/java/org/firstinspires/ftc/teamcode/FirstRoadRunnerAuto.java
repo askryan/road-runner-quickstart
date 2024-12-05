@@ -36,8 +36,8 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
     public class OArm {
         public Servo oArm;
-        public double minPos = 0.15; // needs manual testing II
-        public double maxPos = 0.93; // needs manual testing II
+        public double minPos = 0.18; // needs manual testing II
+        public double maxPos = 0.95; // needs manual testing II
 
         public OArm(HardwareMap hardwareMap) {
             oArm = hardwareMap.get(Servo.class, "oArm");
@@ -50,10 +50,10 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
                     timer.reset();
-                    oArm.setPosition(0);
+                    oArm.setPosition(1);
                     initialized = true;
                 }
-                telemetryPacket.put("Outtake claw position", minPos);
+                telemetryPacket.put("Outtake claw position", maxPos);
                 return timer.milliseconds() < 800;
             }
         }
@@ -68,10 +68,10 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
                     timer.reset();
-                    oArm.setPosition(1);
+                    oArm.setPosition(0);
                     initialized = true;
                 }
-                telemetryPacket.put("Outtake claw position", maxPos);
+                telemetryPacket.put("Outtake claw position", minPos);
                 return timer.milliseconds() < 800;
             }
         }
@@ -84,8 +84,8 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
     public class OClaw {
         public Servo oClaw;
-        public double minPos = 0; // needs manual testing II
-        public double maxPos = 1; // needs manual testing II
+        public double minPos = 0.41; // needs manual testing II
+        public double maxPos = 0.55; // needs manual testing II
 
         public OClaw(HardwareMap hardwareMap) {
             oClaw = hardwareMap.get(Servo.class, "oClaw");
