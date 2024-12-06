@@ -32,7 +32,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Config
 @Autonomous(name = "GoodAuto", group = "Roadrunner")
 public class FirstRoadRunnerAuto extends LinearOpMode {
-    ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    ElapsedTime oArmTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    ElapsedTime oClawTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     public class OArm {
         public Servo oArm;
@@ -49,12 +50,12 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
-                    timer.reset();
+                    oArmTimer.reset();
                     oArm.setPosition(1);
                     initialized = true;
                 }
                 telemetryPacket.put("Outtake claw position", maxPos);
-                return timer.milliseconds() < 800;
+                return oArmTimer.milliseconds() < 800;
             }
         }
 
@@ -67,12 +68,12 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
-                    timer.reset();
+                    oArmTimer.reset();
                     oArm.setPosition(0);
                     initialized = true;
                 }
                 telemetryPacket.put("Outtake claw position", minPos);
-                return timer.milliseconds() < 800;
+                return oArmTimer.milliseconds() < 800;
             }
         }
 
@@ -97,12 +98,12 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
-                    timer.reset();
+                    oClawTimer.reset();
                     oClaw.setPosition(1);
                     initialized = true;
                 }
                 telemetryPacket.put("Outtake claw position", maxPos);
-                return timer.milliseconds() < 400;
+                return oClawTimer.milliseconds() < 400;
             }
         }
 
@@ -115,13 +116,13 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
-                    timer.reset();
+                    oClawTimer.reset();
                     oClaw.setPosition(0);
                     initialized = true;
                 }
 
                 telemetryPacket.put("Outtake claw position", minPos);
-                return timer.milliseconds() < 400;
+                return oClawTimer.milliseconds() < 400;
             }
         }
 
