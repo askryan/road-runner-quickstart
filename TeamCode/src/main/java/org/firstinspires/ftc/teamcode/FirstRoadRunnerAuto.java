@@ -171,6 +171,10 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
                 telemetryPacket.put("Right outtake slide position", posR);
 
                 if (posL > BOTTOM_OUTTAKE_SLIDE_POS && posR > BOTTOM_OUTTAKE_SLIDE_POS) {
+                    if (posL < 100 || posR < 100) {
+                        oSlideL.setPower(-0.1);
+                        oSlideR.setPower(-0.1);
+                    }
                     return true;
                 } else {
                     oSlideL.setPower(0);
@@ -399,7 +403,7 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
                 .strafeTo(new Vector2d(61, -61)); // parks
 
         //init actions
-        Actions.runBlocking(new SequentialAction(oClaw.closeOClaw(), oArm.retractOArm()));
+        Actions.runBlocking(new SequentialAction(oClaw.closeOClaw(), oArm.extendOArm()));
 
         waitForStart();
 
@@ -415,8 +419,7 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
         ParallelAction preloadGoToBar = new ParallelAction(
                 act1,
-                oSlides.extendOSlidesHBar(),
-                oArm.extendOArm()
+                oSlides.extendOSlidesHBar()
         );
 
         SequentialAction goToBarAndHook = new SequentialAction(preloadGoToBar, oSlides.lowerOSlidesToHook(),
