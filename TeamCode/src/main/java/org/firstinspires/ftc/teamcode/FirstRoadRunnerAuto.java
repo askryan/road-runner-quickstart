@@ -37,12 +37,11 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
     public class OArm {
         public Servo oArm;
-        public double minPos = 0.18; // needs manual testing II
-        public double maxPos = 0.95; // needs manual testing II
+        public double minPos = 0.08; // needs manual testing II
+        public double maxPos = 0.89; // needs manual testing II
 
         public OArm(HardwareMap hardwareMap) {
             oArm = hardwareMap.get(Servo.class, "oArm");
-            oArm.scaleRange(minPos, maxPos);
         }
 
         public class ExtendOArm implements Action {
@@ -51,10 +50,10 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
                     oArmTimer.reset();
-                    oArm.setPosition(1);
+                    oArm.setPosition(minPos);
                     initialized = true;
                 }
-                telemetryPacket.put("Outtake claw position", maxPos);
+                telemetryPacket.put("Outtake claw position", minPos);
                 return oArmTimer.milliseconds() < 800;
             }
         }
@@ -69,10 +68,10 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
                     oArmTimer.reset();
-                    oArm.setPosition(0);
+                    oArm.setPosition(maxPos);
                     initialized = true;
                 }
-                telemetryPacket.put("Outtake claw position", minPos);
+                telemetryPacket.put("Outtake claw position", maxPos);
                 return oArmTimer.milliseconds() < 800;
             }
         }
@@ -85,12 +84,11 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
 
     public class OClaw {
         public Servo oClaw;
-        public double minPos = 0.41; // needs manual testing II
+        public double minPos = 0.4; // needs manual testing II
         public double maxPos = 0.55; // needs manual testing II
 
         public OClaw(HardwareMap hardwareMap) {
             oClaw = hardwareMap.get(Servo.class, "oClaw");
-            oClaw.scaleRange(minPos, maxPos);
         }
 
         public class OpenOClaw implements Action {
@@ -99,10 +97,10 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
                     oClawTimer.reset();
-                    oClaw.setPosition(1);
+                    oClaw.setPosition(minPos);
                     initialized = true;
                 }
-                telemetryPacket.put("Outtake claw position", maxPos);
+                telemetryPacket.put("Outtake claw position", minPos);
                 return oClawTimer.milliseconds() < 400;
             }
         }
@@ -117,11 +115,11 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 if (!initialized) {
                     oClawTimer.reset();
-                    oClaw.setPosition(0);
+                    oClaw.setPosition(maxPos);
                     initialized = true;
                 }
 
-                telemetryPacket.put("Outtake claw position", minPos);
+                telemetryPacket.put("Outtake claw position", maxPos);
                 return oClawTimer.milliseconds() < 400;
             }
         }
@@ -189,7 +187,7 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         public class ExtendOSlidesHBar implements Action {
 
             public boolean initialized = false;
-            public static final int HBAR_OUTTAKE_SLIDE_POS = 1500; // needs manual testing II
+            public static final int HBAR_OUTTAKE_SLIDE_POS = 2070; // needs manual testing II
             public static final double OUTTAKE_SLIDE_POWER = 0.5;
 
             @Override
@@ -224,7 +222,7 @@ public class FirstRoadRunnerAuto extends LinearOpMode {
         public class LowerOSlidesToHook implements Action {
 
             public boolean initialized = false;
-            public static final int HBAR_OUTTAKE_SLIDE_POS = 1400; // needs manual testing II
+            public static final int HBAR_OUTTAKE_SLIDE_POS = 1770; // needs manual testing II
             public static final double OUTTAKE_SLIDE_POWER = 0.7;
 
             @Override
